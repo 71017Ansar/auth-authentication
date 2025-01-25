@@ -2,6 +2,8 @@ import NextAuth, { CredentialsSignin } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
 import Email from "next-auth/providers/email"
+import User from "@/model/userModel"
+import {compare} from "bcryptjs"
 
  
 export const { handlers, signIn, signOut, auth } = NextAuth({
@@ -16,22 +18,33 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             email: { label: "Email", type: "email", placeholder : " Enter your email" },
             password: {  label: "Password", type: "password" }
         },
-        authorize: async ({ email, password }) => {
+        authorize: async (credentials) => {
+
+            const email = credentials?.email  as string | undefined ;
+            const password = credentials?.password  as string | undefined ;
 
                 console.log(email, password)
-                if ( typeof email !== 'string' ) 
+                if (!email || !password ) 
                     throw new CredentialsSignin({
-                cause: 'invalid_email',}
+                cause: 'both are invaild credentials',}
             )
 
-            const user = { email , id : "dfg"}
-            if (password !=="passcode")
+            const user =  await User.findOne({email}).select("+password")
+            console.log(user)
+            if( !user)
                 throw new CredentialsSignin({
-                cause: 'invalid_password',}
+                cause: 'invalid_email',}
                 );
-                 else return user
+
+                const isMatch = await compare(password , user.password )
+                console.log(isMatch)
+                if( !isMatch)
+                throw new CredentialsSignin(" invalid credinatials"
+                )
+
+           return { name : user.name , email : user.email , id : user._id}
 
         }
     })
   ],
-})
+});
