@@ -13,42 +13,41 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import User from "@/model/userModel";
+import dbConnect from "@/lib/utils";
+import bcrypt from "bcryptjs";
 
 const Page = () => {
   const router = useRouter();
   const [error, setError] = useState("");
 
-  const handleSignup = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setError(""); // Clear previous errors
+  const handleSignup = async (formdata : FormData) => {
+    "use server";
+    dbConnect();
+ 
+    const name = formdata.get("name") as string | undefined;
+    const email = formdata.get("email") as string | undefined;
+    
+    const password = formdata.get("password") as string | undefined;
+ 
 
-    const formData = new FormData(event.currentTarget);
-    const name = formData.get("name") as string;
-    const email = formData.get("email") as string;
-    const password = formData.get("password") as string;
+ 
+
 
     if (!name || !email || !password) {
       setError("Please fill all fields");
       return;
     }
-
-    try {
-      const res = await fetch("/api/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        setError(data.message || "Signup failed");
-        return;
-      }
-
-      router.push("/login");
-    } catch (err) {
-      setError("Something went wrong");
+    const user = await User.findOne({ email });
+    if (user) {
+      setError("User already exists");
+      return;
     }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await User.create({ name, email, password: hashedPassword });
+    router.push("/login");
+
+   
   };
 
   return (
@@ -62,7 +61,7 @@ const Page = () => {
         </CardHeader>
         <CardContent>
           {error && <p className="text-red-500 text-sm">{error}</p>}
-          <form onSubmit={handleSignup} className="space-y-4">
+          <form action={handleSignup} className="space-y-4">
             <Input
               type="text"
               name="name"
@@ -107,3 +106,4 @@ const Page = () => {
 };
 
 export default Page;
+

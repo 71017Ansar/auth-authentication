@@ -9,8 +9,26 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { signIn } from "@/auth";
 
 const Page = () => {
+  const loginHandler = async (formdata : FormData)=>{
+    "use server";
+    const email = formdata.get("email") as string | undefined;
+    const password = formdata.get("password") as string | undefined;
+    if(!email || !password){
+      throw new Error("Please fill all fields")
+    }
+    try {
+      await signIn("credentials", {
+         email,
+         password,
+         redirect : true,
+         redirectTo : "/"})
+    } catch (error) {
+      throw new Error("Something went wrong")
+    }
+  }
   return (
     <div className=" h-screen flex justify-center items-center">
       <Card className="w-full max-w-md shadow-2xl border border-gray-200 bg-white rounded-2xl">
@@ -21,15 +39,17 @@ const Page = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form action="" className="space-y-4">
+          <form action={loginHandler} className="space-y-4">
             <Input
               type="email"
               placeholder="Email"
+              name = "email"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             />
             <Input
               type="password"
               placeholder="Password"
+              name = "password"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             />
             <Button
@@ -62,3 +82,4 @@ const Page = () => {
 };
 
 export default Page;
+

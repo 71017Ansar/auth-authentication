@@ -4,7 +4,7 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import Email from "next-auth/providers/email"
 import User from "@/model/userModel"
 import {compare} from "bcryptjs"
-
+import dbConnect from "@/lib/utils";
  
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -28,6 +28,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     throw new CredentialsSignin({
                 cause: 'both are invaild credentials',}
             )
+            await dbConnect()
 
             const user =  await User.findOne({email}).select("+password")
             console.log(user)
@@ -47,4 +48,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
     })
   ],
+  pages : {
+    signIn : '/login'
+  },
+
 });
