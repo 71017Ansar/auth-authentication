@@ -22,8 +22,9 @@ const Page = () => {
   const [error, setError] = useState("");
 
   const handleSignup = async (formdata : FormData) => {
-    "use server";
-    dbConnect();
+
+  
+    await dbConnect();
  
     const name = formdata.get("name") as string | undefined;
     const email = formdata.get("email") as string | undefined;

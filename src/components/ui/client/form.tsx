@@ -1,4 +1,4 @@
-" use client";
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import credentialLogin from "@/action/login";
@@ -6,7 +6,8 @@ import credentialLogin from "@/action/login";
     const LoginForm = () => {
 
         return (
-            <form action={    async    ( formdata) =>{
+            <form action={    async    ( formdata : FormData) =>{
+            "use server";
             const   email = formdata.get("email") as string | undefined;
             const  password = formdata.get ("password") as string | undefined;
             if(!email || !password){
